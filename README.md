@@ -1,4 +1,4 @@
-# Brian Perry — Portfolio Site
+# Brian Perry — Portfolio Site 
 ## Cloudflare Pages + Claude AI Chat
 
 ---
