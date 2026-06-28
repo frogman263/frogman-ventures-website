@@ -8,3 +8,4 @@
 # Windows system files (good to add while you're at it)
 Thumbs.db
 ehthumbs.db
+.DS_Store
