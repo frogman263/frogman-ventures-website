@@ -9,20 +9,48 @@ export async function onRequestGet(context) {
   const SHEET_ID = '1tfy8xk7zTf1PvNrylXIC7kiO_UwYS_dHQ_6UVDR1lnE';
   const GVIZ = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Dashboard`;
 
-  // --- 1. Live BTC price (resilient: null on any failure, never blocks) ---
-  let btcPrice = null;
-  try {
-    const pr = await fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
-      { headers: { 'Accept': 'application/json' } }
-    );
-    if (pr.ok) {
-      const pj = await pr.json();
-      btcPrice = pj?.bitcoin?.usd ?? null;
-    }
-  } catch (_) {
-    btcPrice = null;
+  // --- 1. Live BTC price (tries multiple sources; null only if all fail) ---
+  // Each source is wrapped so one being down never blocks the others or the page.
+  async function getBtcPrice() {
+    // Coinbase — reliable server-side, no key, no rate limit for this endpoint
+    try {
+      const r = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot',
+        { headers: { 'Accept': 'application/json' } });
+      if (r.ok) {
+        const j = await r.json();
+        const p = parseFloat(j?.data?.amount);
+        if (p > 0) return p;
+      }
+    } catch (_) {}
+
+    // Kraken — fallback
+    try {
+      const r = await fetch('https://api.kraken.com/0/public/Ticker?pair=XBTUSD',
+        { headers: { 'Accept': 'application/json' } });
+      if (r.ok) {
+        const j = await r.json();
+        const result = j?.result;
+        const key = result && Object.keys(result)[0];
+        const p = key ? parseFloat(result[key]?.c?.[0]) : null;
+        if (p > 0) return p;
+      }
+    } catch (_) {}
+
+    // CoinGecko — last resort (often rate-limited keyless, but try anyway)
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+        { headers: { 'Accept': 'application/json' } });
+      if (r.ok) {
+        const j = await r.json();
+        const p = j?.bitcoin?.usd;
+        if (p > 0) return p;
+      }
+    } catch (_) {}
+
+    return null;
   }
+
+  const btcPrice = await getBtcPrice();
 
   // --- 2. Sheet data ---
   try {
