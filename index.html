@@ -368,7 +368,56 @@
     }
     .suggestion-chip:hover { border-color: var(--gold); color: var(--gold); }
 
-    /* ─── FOOTER ─── */
+    /* ─── CONTACT ─── */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .contact-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--navy);
+      border: 1px solid rgba(200,169,110,0.1);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .contact-card:hover {
+      border-color: rgba(200,169,110,0.4);
+      transform: translateY(-2px);
+      color: var(--white);
+    }
+    .contact-icon {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .contact-card-text h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.2rem;
+    }
+    .contact-card-text p {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .contact-note {
+      margin-top: 2rem;
+      padding: 1.25rem 1.5rem;
+      background: rgba(200,169,110,0.06);
+      border: 1px solid rgba(200,169,110,0.15);
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .contact-note strong { color: var(--gold); }
+    @media (max-width: 680px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
     footer {
       text-align: center;
       padding: 3rem 2rem;
@@ -396,6 +445,7 @@
       <a href="#projects">Projects</a>
       <a href="#skills">Skills</a>
       <a href="#chat">Ask AI</a>
+      <a href="#contact">Contact</a>
     </div>
   </nav>
 
@@ -404,7 +454,7 @@
     <p class="hero-eyebrow">// Navy SEAL → AI Builder → Veteran Entrepreneur</p>
     <h1>Building the<br>future with <span>AI</span><br>& Bitcoin.</h1>
     <p class="hero-sub">
-      20 years of SEAL Team operations. Now building autonomous AI systems,
+      20 years of SEAL team operations. Now building autonomous AI systems,
       Bitcoin infrastructure, and scalable businesses from scratch.
     </p>
     <div class="hero-links">
@@ -462,7 +512,7 @@
 
     <div class="project-card">
       <span class="project-tag">AI · Agentic Systems</span>
-      <h3>Autonomous Trading Agent v2.3</h3>
+      <h3>Autonomous Trading Agent v2.6</h3>
       <p>
         Built from zero coding experience: a fully autonomous AI trading agent connected to Robinhood
         via MCP (Model Context Protocol). Operates on an AI infrastructure thesis across 18 stocks.
@@ -481,6 +531,9 @@
         on a DATUM gateway, plus home miners (Bitaxe, Nano3s). Lightning Network node operator
         (BIZARRETOLL) on Umbrel home server. Self-custody via Coldcard MK5.
       </p>
+      <div class="project-links">
+        <a href="/mining.html">→ View Live Dashboard</a>
+      </div>
     </div>
 
     <div class="project-card">
@@ -560,6 +613,56 @@
       </div>
     </div>
   </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <p class="section-label">// Contact</p>
+    <h2>Let's connect.</h2>
+    <p style="color:var(--muted); margin-bottom:2rem; font-size:0.95rem;">
+      Open to remote roles in fintech, blockchain, and AI. Recruiters welcome.
+    </p>
+
+    <div class="contact-grid">
+      <a href="https://linkedin.com/in/brianperry263" target="_blank" class="contact-card">
+        <div class="contact-icon">💼</div>
+        <div class="contact-card-text">
+          <h4>LinkedIn</h4>
+          <p>linkedin.com/in/brianperry263</p>
+        </div>
+      </a>
+
+      <a href="https://github.com/frogman263" target="_blank" class="contact-card">
+        <div class="contact-icon">💻</div>
+        <div class="contact-card-text">
+          <h4>GitHub</h4>
+          <p>github.com/frogman263</p>
+        </div>
+      </a>
+
+      <a href="https://x.com/frogman263" target="_blank" class="contact-card">
+        <div class="contact-icon">𝕏</div>
+        <div class="contact-card-text">
+          <h4>X / Twitter</h4>
+          <p>@frogman263</p>
+        </div>
+      </a>
+
+      <a href="https://frogmanventures.group" class="contact-card" style="cursor:default; pointer-events:none; opacity:0.5;">
+        <div class="contact-icon">📍</div>
+        <div class="contact-card-text">
+          <h4>Location</h4>
+          <p>Reno, NV · Remote-first</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="contact-note">
+      <strong>Best path for recruiters:</strong> Connect on LinkedIn and mention this site.
+      For project collaborations or technical questions, open an issue on GitHub or reach out via X.
+    </div>
+  </section>
+
+  <hr class="divider" />
 
   <!-- FOOTER -->
   <footer>
