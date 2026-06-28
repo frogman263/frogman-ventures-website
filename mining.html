@@ -218,57 +218,23 @@
       try { return row.c[col]?.v ?? null; } catch { return null; }
     }
 
-    async function fetchSheet() {
-      const res  = await fetch(`/api/mining?_=${Date.now()}`);
-      const json = await res.json();
-      if (json.error) throw new Error(json.error);
-      return json.table.rows;
-    }
-
-    async function fetchBTCPrice() {
-      const res  = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-      const data = await res.json();
-      return data.bitcoin.usd;
-    }
-
-    function getMonthlyRows(rows) {
-      let headerIdx = rows.findIndex(r => {
-        const v = getCell(r, 1);
-        return typeof v === 'string' && v.toLowerCase() === 'month';
-      });
-      if (headerIdx === -1) return [];
-      const monthly = [];
-      for (let i = headerIdx + 1; i < rows.length; i++) {
-        const month = getCell(rows[i], 1);
-        const ths   = getCell(rows[i], 2);
-        if (!month && !ths) break;
-        if (month) monthly.push(rows[i]);
-      }
-      return monthly;
-    }
-
-    function renderMetrics(rows, btcPrice) {
-      const btcMined    = getCell(rows[4], 5);
-      const totalIncome = getCell(rows[5], 5);
-      const costBasis   = getCell(rows[6], 5);
-      const payouts     = getCell(rows[7], 5);
-      const monthly     = getMonthlyRows(rows);
-      const avgTH       = monthly.length
-        ? monthly.reduce((s, r) => s + (getCell(r, 2) || 0), 0) / monthly.length
+    function renderMetrics(data, btcPrice) {
+      const currentVal = btcPrice && data.btcMined ? btcPrice * data.btcMined : null;
+      const avgTH = data.monthly.length
+        ? data.monthly.reduce((s, r) => s + r.avgTH, 0) / data.monthly.length
         : null;
-      const currentVal  = btcPrice && btcMined ? btcPrice * btcMined : null;
 
       document.getElementById('metricsContainer').innerHTML = `
         <div class="metrics-grid">
           <div class="metric-card">
             <div class="metric-icon">₿</div>
-            <div class="metric-value">${btcMined ? btcMined.toFixed(6) : '—'}</div>
+            <div class="metric-value">${data.btcMined.toFixed(6)}</div>
             <div class="metric-label">BTC Mined (YTD)</div>
             ${currentVal ? `<div class="metric-sub">≈ ${fmtUSD(currentVal)} at live price</div>` : ''}
           </div>
           <div class="metric-card">
             <div class="metric-icon">💵</div>
-            <div class="metric-value">${totalIncome ? fmtUSD(totalIncome) : '—'}</div>
+            <div class="metric-value">${fmtUSD(data.totalIncome)}</div>
             <div class="metric-label">Income Recognized</div>
             <div class="metric-sub">USD value at time of receipt</div>
           </div>
@@ -276,30 +242,29 @@
             <div class="metric-icon">⚡</div>
             <div class="metric-value">${avgTH ? avgTH.toLocaleString('en-US', {maximumFractionDigits: 0}) : '—'}</div>
             <div class="metric-label">Avg Hashrate (TH/s)</div>
-            <div class="metric-sub">Across ${monthly.length} month${monthly.length !== 1 ? 's' : ''} of data</div>
+            <div class="metric-sub">Across ${data.monthly.length} month${data.monthly.length !== 1 ? 's' : ''} of data</div>
           </div>
           <div class="metric-card">
             <div class="metric-icon">📦</div>
-            <div class="metric-value">${payouts !== null ? payouts : '—'}</div>
+            <div class="metric-value">${data.payouts}</div>
             <div class="metric-label">Total Payouts</div>
-            <div class="metric-sub">Avg cost basis ${costBasis ? fmtUSD(costBasis) : '—'}/BTC</div>
+            <div class="metric-sub">Avg cost basis ${fmtUSD(data.costBasisPerBTC)}/BTC</div>
           </div>
         </div>`;
     }
 
-    function renderTable(rows) {
-      const monthly = getMonthlyRows(rows);
-      if (!monthly.length) {
+    function renderTable(data) {
+      if (!data.monthly.length) {
         document.getElementById('tableContainer').innerHTML =
-          `<div class="error-state">No monthly data found in sheet.</div>`;
+          `<div class="error-state">No monthly data available.</div>`;
         return;
       }
-      const rowsHTML = monthly.map(r => `
+      const rowsHTML = data.monthly.map(r => `
         <tr>
-          <td>${getCell(r, 1) || '—'}</td>
-          <td class="td-gold">${getCell(r, 2) ? fmtTH(getCell(r, 2)) : '—'}</td>
-          <td>${getCell(r, 4) !== null ? getCell(r, 4).toFixed(8) : '—'}</td>
-          <td class="td-green">${getCell(r, 5) !== null ? fmtUSD(getCell(r, 5)) : '—'}</td>
+          <td>${r.month}</td>
+          <td class="td-gold">${fmtTH(r.avgTH)}</td>
+          <td>${r.btcEarned.toFixed(8)}</td>
+          <td class="td-green">${fmtUSD(r.usdValue)}</td>
         </tr>`).join('');
 
       document.getElementById('tableContainer').innerHTML = `
@@ -318,23 +283,27 @@
         </div>`;
     }
 
+    // Single call: the function returns sheet metrics AND the BTC price together.
     async function loadAll() {
       document.getElementById('metricsContainer').innerHTML =
-        '<div class="loading-state"><div class="spinner"></div>Fetching sheet data...</div>';
+        '<div class="loading-state"><div class="spinner"></div>Loading data...</div>';
       document.getElementById('tableContainer').innerHTML =
         '<div class="loading-state"><div class="spinner"></div></div>';
 
       try {
-        const [rows, btcPrice] = await Promise.all([fetchSheet(), fetchBTCPrice()]);
+        const res  = await fetch(`/api/mining?_=${Date.now()}`);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
 
-        // Price bar
-        const btcMined = getCell(rows[4], 5);
-        document.getElementById('btcPrice').textContent = fmtUSD(btcPrice);
+        const btcPrice = data.btcPrice;
+
+        document.getElementById('btcPrice').textContent =
+          btcPrice ? fmtUSD(btcPrice) : 'unavailable';
         document.getElementById('holdingsValue').textContent =
-          (btcMined && btcPrice) ? fmtUSD(btcMined * btcPrice) : '—';
+          (btcPrice && data.btcMined) ? fmtUSD(btcPrice * data.btcMined) : '—';
 
-        renderMetrics(rows, btcPrice);
-        renderTable(rows);
+        renderMetrics(data, btcPrice);
+        renderTable(data);
       } catch (err) {
         console.error(err);
         document.getElementById('metricsContainer').innerHTML =
