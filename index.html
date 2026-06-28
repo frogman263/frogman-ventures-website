@@ -427,6 +427,36 @@
     }
     footer a { color: var(--gold); }
 
+    /* ─── OPEN TO WORK ─── */
+    .otw-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(76,175,80,0.08); border: 1px solid rgba(76,175,80,0.3);
+      border-radius: 20px; padding: 0.4rem 1.1rem; font-size: 0.8rem;
+      color: #4caf50; text-decoration: none; margin-bottom: 1.75rem;
+      transition: all 0.2s; width: fit-content;
+    }
+    .otw-badge:hover { background: rgba(76,175,80,0.15); color: #4caf50; }
+    .otw-dot {
+      width: 8px; height: 8px; background: #4caf50;
+      border-radius: 50%; flex-shrink: 0; animation: otw-pulse 2s infinite;
+    }
+    @keyframes otw-pulse {
+      0%, 100% { opacity:1; box-shadow: 0 0 0 0 rgba(76,175,80,0.4); }
+      50%       { opacity:0.8; box-shadow: 0 0 0 5px rgba(76,175,80,0); }
+    }
+    .otw-float {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
+      display: flex; align-items: center; gap: 0.5rem;
+      background: #0d1b2a; border: 1px solid rgba(76,175,80,0.4);
+      border-radius: 30px; padding: 0.55rem 1.25rem;
+      font-size: 0.78rem; color: #4caf50; text-decoration: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+    }
+    .otw-float.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .otw-float:hover { border-color: rgba(76,175,80,0.7); }
+
     /* ─── RESPONSIVE ─── */
     @media (max-width: 680px) {
       .about-grid { grid-template-columns: 1fr; }
@@ -457,6 +487,10 @@
       20 years of SEAL team operations. Now building autonomous AI systems,
       Bitcoin infrastructure, and scalable businesses from scratch.
     </p>
+    <a href="https://linkedin.com/in/brianperry263" target="_blank" class="otw-badge">
+      <span class="otw-dot"></span>
+      Open to Work &nbsp;·&nbsp; Remote &nbsp;·&nbsp; AI &nbsp;·&nbsp; Fintech &nbsp;·&nbsp; Blockchain
+    </a>
     <div class="hero-links">
       <a href="https://github.com/frogman263" target="_blank" class="btn btn-gold">View GitHub →</a>
       <a href="https://linkedin.com/in/brianperry263" target="_blank" class="btn btn-outline">LinkedIn</a>
@@ -767,6 +801,22 @@
       inputEl.value = btn.textContent;
       sendMessage();
     }
+  </script>
+
+  <!-- Floating Open to Work pill (appears after scrolling past hero) -->
+  <a href="https://linkedin.com/in/brianperry263" target="_blank" class="otw-float" id="otwFloat">
+    <span class="otw-dot"></span> Open to Work
+  </a>
+
+  <script>
+    // Show floating pill once user scrolls past the hero section
+    const otwFloat = document.getElementById('otwFloat');
+    const hero = document.querySelector('.hero');
+    const observer = new IntersectionObserver(
+      ([entry]) => otwFloat.classList.toggle('visible', !entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(hero);
   </script>
 
 </body>
