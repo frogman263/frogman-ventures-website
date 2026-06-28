@@ -219,10 +219,9 @@
     }
 
     async function fetchSheet() {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Dashboard&_=${Date.now()}`;
-      const res  = await fetch(url);
-      const text = await res.text();
-      const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
+      const res  = await fetch(`/api/mining?_=${Date.now()}`);
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
       return json.table.rows;
     }
 
